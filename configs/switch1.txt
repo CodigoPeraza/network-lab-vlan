@@ -1,0 +1,54 @@
+enable
+configure terminal
+hostname SW1
+no ip domain-lookup
+
+vlan 10
+ name ADMINISTRACION
+vlan 20
+ name USUARIOS
+vlan 30
+ name SERVIDORES
+vlan 99
+ name GESTION
+
+interface range FastEthernet0/1 - 2
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ switchport nonegotiate
+
+interface range FastEthernet0/3 - 4
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ switchport nonegotiate
+
+interface range FastEthernet0/5 - 6
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ switchport nonegotiate
+
+interface FastEthernet0/24
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+
+interface Vlan99
+ ip address 10.99.99.11 255.255.255.0
+ no shutdown
+
+ip default-gateway 10.99.99.1
+
+line con 0
+ logging synchronous
+line vty 0 4
+ login local
+ transport input ssh
+end

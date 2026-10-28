@@ -1,0 +1,57 @@
+enable
+configure terminal
+hostname R1
+no ip domain-lookup
+
+ip dhcp excluded-address 10.10.10.1 10.10.10.20
+ip dhcp excluded-address 10.20.20.1 10.20.20.20
+ip dhcp excluded-address 10.30.30.1 10.30.30.20
+
+ip dhcp pool VLAN10
+ network 10.10.10.0 255.255.255.0
+ default-router 10.10.10.1
+ dns-server 10.30.30.11
+
+ip dhcp pool VLAN20
+ network 10.20.20.0 255.255.255.0
+ default-router 10.20.20.1
+ dns-server 10.30.30.11
+
+ip dhcp pool VLAN30
+ network 10.30.30.0 255.255.255.0
+ default-router 10.30.30.1
+ dns-server 10.30.30.11
+
+ip access-list extended USERS_TO_SERVERS
+ permit tcp 10.20.20.0 0.0.0.255 10.30.30.0 0.0.0.255 eq 80
+ permit tcp 10.20.20.0 0.0.0.255 10.30.30.0 0.0.0.255 eq 443
+ permit udp 10.20.20.0 0.0.0.255 10.30.30.0 0.0.0.255 eq 53
+ deny ip 10.20.20.0 0.0.0.255 10.10.10.0 0.0.0.255
+ permit ip any any
+
+interface GigabitEthernet0/0
+ no shutdown
+
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 10.10.10.1 255.255.255.0
+
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 10.20.20.1 255.255.255.0
+ ip access-group USERS_TO_SERVERS in
+
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 10.30.30.1 255.255.255.0
+
+interface GigabitEthernet0/0.99
+ encapsulation dot1Q 99
+ ip address 10.99.99.1 255.255.255.0
+
+line con 0
+ logging synchronous
+line vty 0 4
+ login local
+ transport input ssh
+end
